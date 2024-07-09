@@ -2,14 +2,23 @@
 import { Model } from 'mongoose';
 import { USER_ROLE } from './user.constant';
 
+
+type TUserName = {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+};
+
 export interface TUser {
   id: string;
+  name: TUserName,
   email: string;
   password: string;
   needsPasswordChange: boolean;
   passwordChangedAt?: Date;
-  role: 'superAdmin' | 'admin' | 'user';
+  role: 'superAdmin' | 'admin' | 'customer' | 'user';
   status: 'in-progress' | 'blocked';
+  profileImg?: string;
   isDeleted: boolean;
 }
 

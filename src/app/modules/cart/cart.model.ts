@@ -7,6 +7,7 @@ const reviewSchema = new Schema({
   rating: { type: Number, required: true },
   comment: { type: String },
   createdAt: { type: Date, default: Date.now },
+  
 });
 
 export const Review = model('Review', reviewSchema);

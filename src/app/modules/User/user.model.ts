@@ -12,6 +12,12 @@ const userSchema = new Schema<TUser, UserModel>(
       required: true,
       unique: true,
     },
+    name:{
+      firstName:String,
+      middleName:String,
+      lastName:String,
+    },
+
     email: {
       type: String,
       required: true,
@@ -38,6 +44,7 @@ const userSchema = new Schema<TUser, UserModel>(
       enum: UserStatus,
       default: 'in-progress',
     },
+    profileImg: { type: String, default: '' },
     isDeleted: {
       type: Boolean,
       default: false,

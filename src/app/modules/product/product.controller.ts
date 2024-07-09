@@ -28,7 +28,9 @@ const handleGetSingleProduct = catchAsync(async (req, res) => {
 });
 
 const handleGetAllProducts = catchAsync(async (req, res) => {
-  const result = await productServices.getAllProducts(req.query);
+  const query = req.query
+  const clearFilters = req.query?.clearFilters == 'true'
+  const result = await productServices.getAllProducts(query,clearFilters);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

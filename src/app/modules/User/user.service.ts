@@ -7,17 +7,20 @@ import AppError from '../../errors/AppError';
 
 import { TUser } from './user.interface';
 import { User } from './user.model';
-import { generateAdminId } from './user.utils';
+import { generateUserId } from './user.utils';
 import { AdminModel } from '../admin/admin.model';
 import { TAdminProfile } from '../admin/admin.interface';
-import { TCustomerProfile } from '../customer/customer.interface';
 import { CustomerModel } from '../customer/customer.model';
+import { sendImageToCloudinary } from '../../utils/sendImagesToCloudinary';
+import { TCustomerProfile } from '../customer/customer.interface';
 
-const createAdminIntoDB = async (
+const createAdmin = async (
   file: any,
   password: string,
   payload: TAdminProfile,
 ) => {
+  const { email, name } = payload;
+
   // create a user object
   const userData: Partial<TUser> = {};
 
@@ -25,15 +28,28 @@ const createAdminIntoDB = async (
   userData.password = password || (config.default_password as string);
 
   //set user role
-  userData.role = 'user';
+  userData.role = 'admin';
   //set user email
-  userData.email = payload.email;
+  userData.email = email;
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
     //set  generated id
-    userData.id = await generateAdminId();
+    userData.id = await generateUserId();
+
+    // user name
+    userData.name = {
+      firstName: name.firstName,
+      middleName: name.middleName,
+      lastName: name.lastName,
+    };
+
+    const imageName = `${userData.id}${payload?.name?.firstName}`;
+    const path = file?.path;
+    //send image to cloudinary
+    const secure_url = await sendImageToCloudinary(imageName, path);
+    userData.profileImg = secure_url;
 
     // create a user (transaction-1)
     const newUser = await User.create([userData], { session });
@@ -45,8 +61,9 @@ const createAdminIntoDB = async (
     // set id , _id as user
     payload.id = newUser[0].id;
     payload.user = newUser[0]._id; //reference _id
-
+    payload.profileImg = secure_url;
     // create a admin (transaction-2)
+
     const newAdmin = await AdminModel.create([payload], { session });
 
     if (!newAdmin.length) {
@@ -63,8 +80,41 @@ const createAdminIntoDB = async (
     throw new Error(err);
   }
 };
+const createUser = async (file: any, password: string, payload: TUser) => {
+  const { email } = payload;
 
-const createCustomerIntoDB = async (
+  // check is user already exist
+  const user = await User.findOne({ email });
+
+  if (user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Opps! User already exist');
+  }
+
+
+  //if password is not given , use deafult password
+  payload.password = password || (config.default_password as string);
+
+  //set user role
+  payload.role = 'user';
+
+  //set  generated id
+  payload.id = await generateUserId();
+
+  const imageName = `${payload.id}${payload?.name?.firstName}`;
+  const path = file?.path;
+  //send image to cloudinary
+  const secure_url = await sendImageToCloudinary(imageName, path);
+  payload!.profileImg = secure_url;
+
+  // create a user (transaction-1)
+  console.log({userData: payload});
+  const newUser = await User.create(payload);
+  console.log({ newUser });
+
+  return newUser;
+};
+
+const createCustomer = async (
   file: any,
   password: string,
   payload: TCustomerProfile,
@@ -75,39 +125,44 @@ const createCustomerIntoDB = async (
   //if password is not given , use deafult password
   userData.password = password || (config.default_password as string);
 
-  //set user role
-  userData.role = 'user';
-  //set user email
+  //set student role
+  userData.role = 'customer';
+  // set student email
   userData.email = payload.email;
+
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
-    //set  generated id
-    userData.id = await generateAdminId();
+
+    //upload image to cloudinary
+    const imageName = `${userData.id}${payload?.name?.firstName}`;
+    const path = file?.path;
+    const secure_url = await sendImageToCloudinary(imageName, path);
 
     // create a user (transaction-1)
-    const newUser = await User.create([userData], { session });
+    const newUser = await User.create([userData], { session }); // array
 
-    //create a admin
+    //create a student
     if (!newUser.length) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create customer');
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create user');
     }
     // set id , _id as user
-    payload.id = newUser[0].id;
     payload.user = newUser[0]._id; //reference _id
+    payload.profileImg = secure_url;
 
-    // create a admin (transaction-2)
-    const newAdmin = await CustomerModel.create([payload], { session });
+    // create a student (transaction-2)
 
-    if (!newAdmin.length) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create customer');
+    const newStudent = await CustomerModel.create([payload], { session });
+
+    if (!newStudent.length) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create student');
     }
 
     await session.commitTransaction();
     await session.endSession();
 
-    return newAdmin;
+    return newStudent;
   } catch (err: any) {
     await session.abortTransaction();
     await session.endSession();
@@ -135,8 +190,9 @@ const changeStatus = async (id: string, payload: { status: string }) => {
 };
 
 export const UserServices = {
-  createAdminIntoDB,
-  createCustomerIntoDB,
+  createCustomer,
+  createUser,
+  createAdminIntoDB: createAdmin,
   getMe,
   changeStatus,
 };

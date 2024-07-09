@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
-import mongoose from 'mongoose';
 import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../errors/AppError';
-
 
 import { TProduct } from './product.interface';
 import { ProductModel } from './product.model';
@@ -13,16 +11,22 @@ const createProduct = async (payload: TProduct) => {
   return await ProductModel.create(payload);
 };
 
-const getAllProducts = async (query: Record<string, unknown>) => {
-  const adminQuery = new QueryBuilder(ProductModel.find(), query)
-    .search(['name'])
-    .filter()
-    .sort()
-    .paginate()
-    .fields();
+const getAllProducts = async (
+  query: Record<string, unknown>,
+  clearFilters: boolean = false,
+) => {
+  const queryBuilder = new QueryBuilder(ProductModel.find(), query);
 
-  const result = await adminQuery.modelQuery;
-  const meta = await adminQuery.countTotal();
+  console.log(query);
+
+  if (clearFilters) {
+    queryBuilder.clearFilters();
+  } else {
+    queryBuilder.search(['name']).filter().sort().paginate().fields();
+  }
+
+  const result = await queryBuilder.modelQuery;
+  const meta = await queryBuilder.countTotal();
 
   return {
     result,
@@ -36,14 +40,16 @@ const getSingleProduct = async (id: string) => {
 };
 
 const updateProduct = async (id: string, payload: Partial<TProduct>) => {
-
   // check is valid id
-  isValidObjectId(id)
+  isValidObjectId(id);
 
   // check is this product found by id
   const isProductExist = await ProductModel.exists({ _id: id });
-  if(!isProductExist){
-    throw new AppError(httpStatus.NOT_FOUND,'Opps! this product is not found!!')
+  if (!isProductExist) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Opps! this product is not found!!',
+    );
   }
 
   const { images, ...remainingAdminData } = payload;
@@ -68,14 +74,12 @@ const updateProduct = async (id: string, payload: Partial<TProduct>) => {
 };
 
 const deleteProduct = async (id: string) => {
-
   // check is valid id
-  isValidObjectId(id)
+  isValidObjectId(id);
   // delete project (soft deletion)
-  const deletedProduct = await ProductModel.findByIdAndUpdate(
-    id,
-    { isDeleted: true }
-  );
+  const deletedProduct = await ProductModel.findByIdAndUpdate(id, {
+    isDeleted: true,
+  });
 
   return deletedProduct;
 };

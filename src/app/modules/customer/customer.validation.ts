@@ -1,18 +1,18 @@
 import { z } from 'zod';
 import { BloodGroup, Gender } from './customer.constant';
 
-const createUserNameValidationSchema = z.object({
+const createCustomerNameValidationSchema = z.object({
   firstName: z.string().min(1).max(20),
   middleName: z.string().max(20),
   lastName: z.string().max(20),
 });
 
-export const createUserProfileValidationSchema = z.object({
+export const createCustomerProfileValidationSchema = z.object({
   body: z.object({
     password: z.string().max(20).optional(),
     admin: z.object({
       designation: z.string(),
-      name: createUserNameValidationSchema,
+      name: createCustomerNameValidationSchema,
       gender: z.enum([...Gender] as [string, ...string[]]),
       dateOfBirth: z.string().optional(),
       email: z.string().email(),
@@ -32,7 +32,7 @@ const updateUserNameValidationSchema = z.object({
   lastName: z.string().min(3).max(20).optional(),
 });
 
-export const updateUserProfileValidationSchema = z.object({
+export const updateCustomerProfileValidationSchema = z.object({
   body: z.object({
     admin: z.object({
       name: updateUserNameValidationSchema,
@@ -51,6 +51,6 @@ export const updateUserProfileValidationSchema = z.object({
 });
 
 export const AdminValidations = {
-  createUserProfileValidationSchema,
-  updateUserProfileValidationSchema,
+  createCustomerProfileValidationSchema,
+  updateCustomerProfileValidationSchema,
 };
