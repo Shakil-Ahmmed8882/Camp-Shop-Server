@@ -29,6 +29,17 @@ const handleGetAllCarts = catchAsync(async (req, res) => {
   });
 });
 
+const handleUpdateCart = catchAsync(async (req, res) => {
+  const result = await CartServices.updateCart(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Product is updated succesfully',
+    data: result,
+  });
+});
+
 const handleDeleteCart = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await CartServices.deleteCart(id);
@@ -44,5 +55,6 @@ const handleDeleteCart = catchAsync(async (req, res) => {
 export const CartControllers = {
   handleAddToCart,
   handleGetAllCarts,
-  handleDeleteCart,
+  handleDeleteCart, 
+  handleUpdateCart,
 };

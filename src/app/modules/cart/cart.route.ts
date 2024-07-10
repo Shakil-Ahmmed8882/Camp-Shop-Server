@@ -15,6 +15,12 @@ router.post(
   CartControllers.handleAddToCart,
 );
 
+router.patch(
+  '/',
+  //   auth(USER_ROLE.superAdmin, USER_ROLE.admin),
+  CartControllers.handleUpdateCart,
+);
+
 router.delete(
   '/:id',
   //   auth(USER_ROLE.superAdmin, USER_ROLE.admin),

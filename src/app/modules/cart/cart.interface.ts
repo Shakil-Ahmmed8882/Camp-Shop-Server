@@ -1,12 +1,7 @@
-import { Document, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
-interface ICartItem {
+export interface TUserCart {
+  userId: Types.ObjectId;
   productId: Types.ObjectId;
   quantity: number;
-}
-
-export interface TUserCart extends Document {
-  userId: Types.ObjectId;
-  items: ICartItem[];
-  createdAt: Date;
 }

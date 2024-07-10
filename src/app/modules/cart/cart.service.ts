@@ -18,8 +18,8 @@ const addToCart = async (
   // start a session for rollback
   const session = await mongoose.startSession();
   try {
-    // start transaction rollback
     let isOutOfStock = false;
+    // start transaction rollback
     session.startTransaction();
     const { userId } = payload;
 
@@ -125,6 +125,64 @@ const getAllCarts = async (
   };
 };
 
+const updateCart = async (payload: TUserCart) => {
+  const { productId, quantity, userId } = payload;
+
+  const session = await mongoose.startSession();
+  try {
+    let isOutOfStock = false;
+    session.startTransaction();
+
+    // check if order quantity exceeds the available products
+    if (quantity <= 0) {
+      throw new AppError(httpStatus.NOT_FOUND, "Opps! quantity can't be 0");
+    }
+
+    // check is cart exist
+    const cart = await CartModel.findOne({ userId }).session(session);
+    if (!cart) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Cart not found');
+    }
+
+    // check is product exist
+    const product = await ProductModel.findById(productId).session(session);
+    if (!product) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Opps! Product not found');
+    }
+
+    const cartItem = cart.items.find(
+      (item) => item.productId.toString() === productId.toString(),
+    );
+    if (!cartItem) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Opps! Product not in cart');
+    }
+
+    // check if product is out of stock
+    if (product.stock <= 0) {
+      isOutOfStock = true;
+      return { cart: null, isOutOfStock };
+    }
+
+    // check if order quantity exceeds the available products
+    if (quantity > product.stock) {
+      isOutOfStock = true;
+      return { cart: null, isOutOfStock };
+    }
+
+    cartItem.quantity = quantity;
+
+    await cart.save({ session });
+    await session.commitTransaction();
+    session.endSession();
+
+    return { cart, isOutOfStock };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
 const deleteCart = async (id: string) => {
   // check is valid id
   isValidObjectId(id);
@@ -140,4 +198,5 @@ export const CartServices = {
   addToCart,
   getAllCarts,
   deleteCart,
+  updateCart,
 };
