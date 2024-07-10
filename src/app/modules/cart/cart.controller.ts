@@ -4,9 +4,8 @@ import sendResponse from '../../utils/sendResponse';
 import { CartServices } from './cart.service';
 
 const handleAddToCart = catchAsync(async (req, res) => {
-  const product = req.body;
-  const productId = req.params.id;
-  const result = await CartServices.addToCart(product, productId);
+  const { productId, quantity } = req.body;
+  const result = await CartServices.addToCart(req.body, productId, quantity);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
