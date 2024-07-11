@@ -26,6 +26,13 @@ router.delete(
   //   auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   CartControllers.handleDeleteCart,
 );
+
+router.get(
+  '/:id',
+  //   auth(USER_ROLE.superAdmin, USER_ROLE.admin),
+  CartControllers.handleGetCartById,
+);
+
 router.get(
   '/',
   //   auth(USER_ROLE.superAdmin, USER_ROLE.admin),

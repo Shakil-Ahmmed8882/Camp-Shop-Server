@@ -4,7 +4,7 @@ import sendResponse from '../../utils/sendResponse';
 import { productServices } from './product.service';
 
 const handleCreateProduct = catchAsync(async (req, res) => {
-  const  product  = req.body;
+  const product = req.body;
   const result = await productServices.createProduct(product);
 
   sendResponse(res, {
@@ -28,9 +28,9 @@ const handleGetSingleProduct = catchAsync(async (req, res) => {
 });
 
 const handleGetAllProducts = catchAsync(async (req, res) => {
-  const query = req.query
-  const clearFilters = req.query?.clearFilters == 'true'
-  const result = await productServices.getAllProducts(query,clearFilters);
+  const query = req.query;
+  const clearFilters = req.query?.clearFilters == 'true';
+  const result = await productServices.getAllProducts(query, clearFilters);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -43,8 +43,7 @@ const handleGetAllProducts = catchAsync(async (req, res) => {
 
 const handleUpdateProduct = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { admin } = req.body;
-  const result = await productServices.updateProduct(id, admin);
+  const result = await productServices.updateProduct(id, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

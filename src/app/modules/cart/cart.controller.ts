@@ -7,6 +7,8 @@ const handleAddToCart = catchAsync(async (req, res) => {
   const { productId, quantity } = req.body;
   const result = await CartServices.addToCart(req.body, productId, quantity);
 
+  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -26,6 +28,19 @@ const handleGetAllCarts = catchAsync(async (req, res) => {
     message: 'All Products are retrieved succesfully',
     meta: result.meta,
     data: result.result,
+  });
+});
+
+const handleGetCartById = catchAsync(async (req, res) => {
+
+  const {id} = req.params;
+  const result = await CartServices.getCartById(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'All Products are retrieved succesfully',
+    data: result,
   });
 });
 
@@ -55,6 +70,7 @@ const handleDeleteCart = catchAsync(async (req, res) => {
 export const CartControllers = {
   handleAddToCart,
   handleGetAllCarts,
+  handleGetCartById,
   handleDeleteCart, 
   handleUpdateCart,
 };

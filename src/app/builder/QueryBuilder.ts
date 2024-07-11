@@ -52,6 +52,7 @@ class QueryBuilder<T> {
         priceFilter.$lte = Number(queryObj.maxPrice);
         delete queryObj.maxPrice;
       }
+      
 
       this.modelQuery = this.modelQuery.find({
         price: priceFilter,

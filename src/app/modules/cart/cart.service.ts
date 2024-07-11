@@ -8,7 +8,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { ProductModel } from '../product/product.model';
 import { User } from '../User/user.model';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 const addToCart = async (
   payload: TUserCart,
@@ -70,25 +70,29 @@ const addToCart = async (
       (item) => item.productId.toString() === productId,
     );
 
-    // if so check it's available & increment quantity
     if (existingCartItem) {
-      if (existingCartItem.quantity + quantity > product.stock) {
-        isOutOfStock = true;
-        return { cart, isOutOfStock };
-      }
-
-      if (existingCartItem.quantity < product.stock) {
-        existingCartItem.quantity += quantity;
-      } else {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          'Cannot add more items, stock limit reached',
-        );
-      }
-    } else {
-      // new product in list of existing cart products
-      cart.items.push({ productId, quantity: quantity });
+      throw new AppError(httpStatus.BAD_REQUEST, 'Opps! already added.');
     }
+
+    // // if so check it's available & increment quantity
+    // if (existingCartItem) {
+    //   if (existingCartItem.quantity + quantity > product.stock) {
+    //     isOutOfStock = true;
+    //     return { cart, isOutOfStock };
+    //   }
+
+    //   if (existingCartItem.quantity < product.stock) {
+    //     existingCartItem.quantity += quantity;
+    //   } else {
+    //     throw new AppError(
+    //       httpStatus.BAD_REQUEST,
+    //       'Cannot add more items, stock limit reached',
+    //     );
+    //   }
+    // } else {
+    // new product in list of existing cart products
+    cart.items.push({ productId, quantity: quantity });
+    // }
 
     // save & end the transaction
     await cart.save({ session });
@@ -175,6 +179,8 @@ const updateCart = async (payload: TUserCart) => {
     await session.commitTransaction();
     session.endSession();
 
+    console.log(cart)
+
     return { cart, isOutOfStock };
   } catch (error) {
     await session.abortTransaction();
@@ -186,17 +192,56 @@ const updateCart = async (payload: TUserCart) => {
 const deleteCart = async (id: string) => {
   // check is valid id
   isValidObjectId(id);
+
   // delete project (soft deletion)
-  const deletedProduct = await CartModel.findByIdAndUpdate(id, {
-    isDeleted: true,
-  });
+  const deletedProduct = await CartModel.findByIdAndDelete(id);
 
   return deletedProduct;
+};
+
+const getCartById = async (id: string) => {
+  // check is valid id
+  isValidObjectId(id);
+  // delete project (soft deletion)
+  const cart = await CartModel.findOne({ userId: id });
+
+  if (!cart) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Opps! not found');
+  }
+  // Extract and map product IDs to ObjectId instances
+  const productIds = cart?.items.map(
+    (item) => new Types.ObjectId(item.productId),
+  );
+
+  // Query the product collection using the mapped product IDs
+  const products = await ProductModel.find({ _id: { $in: productIds } });
+
+
+  // this functionality loop array of product 
+  // & return each product toal price based on its price & quantity 
+  const productsWithPricesAndQuantity = products.map((product, i) => {
+    const totalPrice = product.price * cart.items[i].quantity;
+    return {
+      product: product.name, // Adjust this based on your product schema
+      price: product.price,
+      quantity: cart.items[i].quantity,
+      totalPrice: totalPrice,
+    };
+  });
+
+  const totalPrice = productsWithPricesAndQuantity.reduce(
+    (acc, cur) => acc + cur.totalPrice,
+    0,
+  );
+
+
+  return { products: productsWithPricesAndQuantity, totalPrice };
 };
 
 export const CartServices = {
   addToCart,
   getAllCarts,
   deleteCart,
+  getCartById,
   updateCart,
 };

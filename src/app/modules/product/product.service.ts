@@ -17,8 +17,6 @@ const getAllProducts = async (
 ) => {
   const queryBuilder = new QueryBuilder(ProductModel.find(), query);
 
-  console.log(query);
-
   if (clearFilters) {
     queryBuilder.clearFilters();
   } else {
