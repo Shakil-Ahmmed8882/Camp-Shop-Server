@@ -22,7 +22,7 @@ router.patch(
 );
 
 router.delete(
-  '/:id',
+  '/:cartId/:productId',
   //   auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   CartControllers.handleDeleteCart,
 );

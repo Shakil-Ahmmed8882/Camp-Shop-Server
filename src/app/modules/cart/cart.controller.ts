@@ -5,9 +5,8 @@ import { CartServices } from './cart.service';
 
 const handleAddToCart = catchAsync(async (req, res) => {
   const { productId, quantity } = req.body;
-  const result = await CartServices.addToCart(req.body, productId, quantity);
-
   
+  const result = await CartServices.addToCart(req.body, productId, quantity);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -32,8 +31,7 @@ const handleGetAllCarts = catchAsync(async (req, res) => {
 });
 
 const handleGetCartById = catchAsync(async (req, res) => {
-
-  const {id} = req.params;
+  const { id } = req.params;
   const result = await CartServices.getCartById(id);
 
   sendResponse(res, {
@@ -56,8 +54,9 @@ const handleUpdateCart = catchAsync(async (req, res) => {
 });
 
 const handleDeleteCart = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const result = await CartServices.deleteCart(id);
+  const { productId } = req.params;
+  const { cartId } = req.params;
+  const result = await CartServices.deleteCart(cartId, productId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -71,6 +70,6 @@ export const CartControllers = {
   handleAddToCart,
   handleGetAllCarts,
   handleGetCartById,
-  handleDeleteCart, 
+  handleDeleteCart,
   handleUpdateCart,
 };

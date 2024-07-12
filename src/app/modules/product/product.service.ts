@@ -23,6 +23,7 @@ const getAllProducts = async (
     queryBuilder.search(['name']).filter().sort().paginate().fields();
   }
 
+
   const result = await queryBuilder.modelQuery;
   const meta = await queryBuilder.countTotal();
 
