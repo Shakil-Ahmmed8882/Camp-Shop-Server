@@ -6,9 +6,21 @@ import AppError from '../../errors/AppError';
 import { TProduct } from './product.interface';
 import { ProductModel } from './product.model';
 import { isValidObjectId } from '../../utils/isValidObjectId';
+import { sendImageToCloudinary } from '../../utils/sendImagesToCloudinary';
 
-const createProduct = async (payload: TProduct) => {
-  return await ProductModel.create(payload);
+const createProduct = async (payload: TProduct, file: any) => {
+  try {
+    const imageName = `${payload?.name}`;
+    const path = file?.path;
+    //send image to cloudinary
+    const secure_url = await sendImageToCloudinary(imageName, path);
+    if (secure_url) {
+      payload.images = [secure_url];
+      return await ProductModel.create(payload);
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const getAllProducts = async (
@@ -22,7 +34,6 @@ const getAllProducts = async (
   } else {
     queryBuilder.search(['name']).filter().sort().paginate().fields();
   }
-
 
   const result = await queryBuilder.modelQuery;
   const meta = await queryBuilder.countTotal();
