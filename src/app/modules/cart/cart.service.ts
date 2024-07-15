@@ -184,6 +184,8 @@ const getCartById = async (id: string) => {
   // delete project (soft deletion)
   const cart = await CartModel.findOne({ userId: id });
 
+  
+  
   if (!cart) {
     throw new AppError(httpStatus.NOT_FOUND, 'Opps! not found');
   }
@@ -191,25 +193,48 @@ const getCartById = async (id: string) => {
   const productIds = cart?.items.map(
     (item) => new Types.ObjectId(item.productId),
   );
+  
+  
+
+  
+
+  // this functionality loop array of product
+  // & return each product toal price based on its price & quantity
+  
 
   // Query the product collection using the mapped product IDs
   const products = await ProductModel.find({ _id: { $in: productIds } });
 
-  // this functionality loop array of product
-  // & return each product toal price based on its price & quantity
-  const productsWithPricesAndQuantity = products.map((product, i) => {
-    const totalPrice = product.price * cart.items[i].quantity;
+  // Sort products by createdAt
+  const sortedProducts = products.sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
+    const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  // Map sorted products to the desired structure
+  const productsWithPricesAndQuantity =  sortedProducts.map((product) => {
+    const cartItem = cart.items.find((item) => item.productId.toString() === product._id.toString());
+
+    if (!cartItem) {
+      return null;
+    }
+
+    const totalPrice = product.price * cartItem.quantity;
+
     return {
-      product: product.name, // Adjust this based on your product schema
+      product: product.name,
       price: product.price,
-      productId: product?._id,
-      cartId: cart?._id,
-      stock: product?.stock,
-      image: product?.images[0],
-      quantity: cart.items[i].quantity,
+      productId: product._id,
+      cartId: cart._id,
+      stock: product.stock,
+      image: product.images[0],
+      quantity: cartItem.quantity,
       totalPrice: totalPrice,
     };
-  });
+  }).filter((item) => item !== null);
+
+
 
   const totalPrice = productsWithPricesAndQuantity.reduce(
     (acc, cur) => acc + cur.totalPrice,
