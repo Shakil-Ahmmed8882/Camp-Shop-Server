@@ -205,6 +205,7 @@ const getCartById = async (id: string) => {
       productId: product?._id,
       cartId: cart?._id,
       stock: product?.stock,
+      image: product?.images[0],
       quantity: cart.items[i].quantity,
       totalPrice: totalPrice,
     };

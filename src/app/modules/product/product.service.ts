@@ -6,7 +6,7 @@ import AppError from '../../errors/AppError';
 import { TProduct } from './product.interface';
 import { ProductModel } from './product.model';
 import { isValidObjectId } from '../../utils/isValidObjectId';
-import { sendImageToCloudinary } from '../../utils/sendImagesToCloudinary';
+import { deleteImageFromCloudinaryByUrl, sendImageToCloudinary } from '../../utils/sendImagesToCloudinary';
 
 const createProduct = async (payload: TProduct, file: any) => {
   try {
@@ -27,7 +27,7 @@ const getAllProducts = async (
   query: Record<string, unknown>,
   clearFilters: boolean = false,
 ) => {
-  const queryBuilder = new QueryBuilder(ProductModel.find(), query);
+  const queryBuilder = new QueryBuilder(ProductModel.find({isDeleted:false}), query);
 
   if (clearFilters) {
     queryBuilder.clearFilters();
@@ -86,6 +86,13 @@ const updateProduct = async (id: string, payload: Partial<TProduct>) => {
 const deleteProduct = async (id: string) => {
   // check is valid id
   isValidObjectId(id);
+  const product = await ProductModel.findById(id)
+  const productImage = product?.images[0]
+
+  console.log({productImage})
+if(productImage){
+  deleteImageFromCloudinaryByUrl(productImage)
+}
   // delete project (soft deletion)
   const deletedProduct = await ProductModel.findByIdAndUpdate(id, {
     isDeleted: true,
