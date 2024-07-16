@@ -6,10 +6,11 @@ import AppError from '../../errors/AppError';
 import { User } from '../User/user.model';
 import { AdminSearchableFields } from './admin.constant';
 import { TAdminProfile } from './admin.interface';
-import { Admin } from './admin.model';
+import { AdminModel } from './admin.model';
+
 
 const getAllAdminsFromDB = async (query: Record<string, unknown>) => {
-  const adminQuery = new QueryBuilder(Admin.find(), query)
+  const adminQuery = new QueryBuilder(AdminModel.find(), query)
     .search(AdminSearchableFields)
     .filter()
     .sort()
@@ -25,7 +26,7 @@ const getAllAdminsFromDB = async (query: Record<string, unknown>) => {
 };
 
 const getSingleAdminFromDB = async (id: string) => {
-  const result = await Admin.findById(id);
+  const result = await AdminModel.findById(id);
   return result;
 };
 
@@ -42,7 +43,7 @@ const updateAdminIntoDB = async (id: string, payload: Partial<TAdminProfile>) =>
     }
   }
 
-  const result = await Admin.findByIdAndUpdate({ id }, modifiedUpdatedData, {
+  const result = await AdminModel.findByIdAndUpdate({ id }, modifiedUpdatedData, {
     new: true,
     runValidators: true,
   });
@@ -55,7 +56,7 @@ const deleteAdminFromDB = async (id: string) => {
   try {
     session.startTransaction();
 
-    const deletedAdmin = await Admin.findByIdAndUpdate(
+    const deletedAdmin = await AdminModel.findByIdAndUpdate(
       id,
       { isDeleted: true },
       { new: true, session },

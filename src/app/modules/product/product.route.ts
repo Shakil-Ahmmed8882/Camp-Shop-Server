@@ -4,20 +4,19 @@ import express from 'express';
 // import validateRequest from '../../middlewares/validateRequest';
 import validateRequest from '../../middlewares/validateRequest';
 import {
-  createValidationProductSchema,
+  
   updateValidationProductSchema,
 } from './product.validation';
 import { ProductControllers } from './product.controller';
-import { upload } from '../../utils/sendImagesToCloudinary';
-import { parseBody } from '../../utils/parseBody';
+
 
 const router = express.Router();
 
 router.post(
   '/create-product',
   //   auth(USER_ROLE.superAdmin, USER_ROLE.admin),
-  upload.single('image'),
-  parseBody,
+  // upload.single('image'),
+  // parseBody,
   // validateRequest(createValidationProductSchema),
   ProductControllers.handleCreateProduct,
 );
@@ -28,9 +27,11 @@ router.get(
   ProductControllers.handleGetSingleProduct,
 );
 
-router.patch(
+router.post(
   '/:id',
   //   auth(USER_ROLE.superAdmin),
+  // upload.single('image'),
+  // parseBody,
   validateRequest(updateValidationProductSchema),
   ProductControllers.handleUpdateProduct,
 );

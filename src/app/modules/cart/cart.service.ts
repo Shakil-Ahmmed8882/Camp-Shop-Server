@@ -237,7 +237,7 @@ const getCartById = async (id: string) => {
 
 
   const totalPrice = productsWithPricesAndQuantity.reduce(
-    (acc, cur) => acc + cur.totalPrice,
+    (acc, cur) => acc + cur!.totalPrice,
     0,
   );
 

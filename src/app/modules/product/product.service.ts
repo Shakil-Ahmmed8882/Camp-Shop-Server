@@ -6,18 +6,11 @@ import AppError from '../../errors/AppError';
 import { TProduct } from './product.interface';
 import { ProductModel } from './product.model';
 import { isValidObjectId } from '../../utils/isValidObjectId';
-import { deleteImageFromCloudinaryByUrl, sendImageToCloudinary } from '../../utils/sendImagesToCloudinary';
+import { deleteImageFromCloudinaryByUrl } from '../../utils/sendImagesToCloudinary';
 
-const createProduct = async (payload: TProduct, file: any) => {
+const createProduct = async (payload: TProduct) => {
   try {
-    const imageName = `${payload?.name}`;
-    const path = file?.path;
-    //send image to cloudinary
-    const secure_url = await sendImageToCloudinary(imageName, path);
-    if (secure_url) {
-      payload.images = [secure_url];
-      return await ProductModel.create(payload);
-    }
+    return await ProductModel.create(payload);
   } catch (error) {
     console.log(error);
   }
@@ -28,16 +21,17 @@ const getAllProducts = async (
   clearFilters: boolean = false,
 ) => {
   const queryBuilder = new QueryBuilder(ProductModel.find({isDeleted:false}), query);
-
+  
+  
   if (clearFilters) {
     queryBuilder.clearFilters();
   } else {
     queryBuilder.search(['name']).filter().sort().paginate().fields();
   }
-
+  
   const result = await queryBuilder.modelQuery;
   const meta = await queryBuilder.countTotal();
-
+  
   return {
     result,
     meta,
@@ -61,19 +55,18 @@ const updateProduct = async (id: string, payload: Partial<TProduct>) => {
       'Opps! this product is not found!!',
     );
   }
+  
 
-  const { images, ...remainingAdminData } = payload;
+  const {images, ...restUpdatingData} = payload
 
   // Create an update query object with the
   // remaining product data
   const updateQuery: Record<string, unknown> = {
-    ...remainingAdminData,
+    ...restUpdatingData,
   };
 
-  // (non-primitive) If there are new images, use $addToSet
-  // with $each to add them to the existing array
-  if (images && images.length) {
-    updateQuery['$addToSet'] = { images: { $each: images } };
+  if( images && images?.length > 0){
+    updateQuery['$set'] = { images:  [images[0]] } ;
   }
 
   const result = await ProductModel.findByIdAndUpdate(id, updateQuery, {

@@ -5,7 +5,7 @@ import { productServices } from './product.service';
 
 const handleCreateProduct = catchAsync(async (req, res) => {
   
-  const result = await productServices.createProduct(req.body, req.file);
+  const result = await productServices.createProduct(req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -42,8 +42,10 @@ const handleGetAllProducts = catchAsync(async (req, res) => {
 });
 
 const handleUpdateProduct = catchAsync(async (req, res) => {
+
   const { id } = req.params;
-  const result = await productServices.updateProduct(id, req.body);
+  
+  const result = await productServices.updateProduct(id,req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

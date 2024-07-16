@@ -20,9 +20,9 @@ const updateValidationProductSchema = z.object({
     body: z.object({
       name: z.string().nonempty('Name is required').optional(),
       description: z.string().nonempty('Description is required').optional(),
-      price: z.number().positive('Price must be a positive number').optional(),
+      price: z.string(),
       category: z.string().nonempty('Category is required').optional(),
-      stock: z.number().int().nonnegative('Stock must be a non-negative integer').optional(),
+      stock: z.string(),
       images: z.array(z.string().url()).optional()
     }),
   });

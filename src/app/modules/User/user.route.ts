@@ -6,7 +6,7 @@ import { USER_ROLE } from './user.constant';
 import { UserControllers } from './user.controller';
 import { UserValidation } from './user.validation';
 import { createAdminValidationSchema } from '../admin/admin.validation';
-import { upload } from '../../utils/sendImagesToCloudinary';
+// import { upload } from '../../utils/sendImagesToCloudinary';
 import { parseBody } from '../../utils/parseBody';
 import { createCustomerProfileValidationSchema } from '../customer/customer.validation';
 
@@ -18,7 +18,7 @@ const router = express.Router();
 router.post(
   '/create-user',
   // auth(USER_ROLE.superAdmin, USER_ROLE.admin),
-  upload.single('file'),
+  // upload.single('file'),
   parseBody,
   validateRequest(UserValidation.userValidationSchema),
   UserControllers.handleCreateUser,
@@ -27,7 +27,7 @@ router.post(
 router.post(
   '/create-admin',
   // auth(USER_ROLE.superAdmin, USER_ROLE.admin),
-  upload.single('file'),
+  // upload.single('file'),
   parseBody,
   validateRequest(createAdminValidationSchema),
   UserControllers.handleCreateAdmin,
@@ -37,7 +37,7 @@ router.post(
   '/create-customer',
   // auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   // bring JSON back into object
-  upload.single('file'),
+  // upload.single('file'),
   parseBody,
   validateRequest(createCustomerProfileValidationSchema),
   UserControllers.handleCreateCustomer,
